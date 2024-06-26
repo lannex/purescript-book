@@ -1,40 +1,40 @@
-# Functions and Records
+# 함수와 레코드
 
-## Chapter Goals
+## 챕터 목표
 
-This chapter will introduce two building blocks of PureScript programs: functions and records. In addition, we'll see how to structure PureScript programs, and how to use types as an aid to program development.
+이번 챕터에서는 PureScript 프로그램의 두 가지 기본 구성 요소인 함수와 레코드를 소개합니다. 또한 PureScript 프로그램의 구조화 방법과 타입을 프로그램 개발의 보조 도구로 사용하는 방법을 배울 것입니다.
 
-We will build a simple address book application to manage a list of contacts. This code will introduce some new ideas from the syntax of PureScript.
+우리는 주소록 애플리케이션을 만들어 연락처 목록을 관리할 것입니다. 이 코드는 PureScript 문법에서 새로운 아이디어를 소개할 것입니다.
 
-The front-end of our application will be the interactive mode PSCi, but it would be possible to build on this code to write a front-end in JavaScript. In fact, we will do exactly that in later chapters, adding form validation and save/restore functionality.
+우리 애플리케이션의 프런트 엔드는 인터랙티브 모드 PSCi가 될 것이지만, 이 코드를 기반으로 JavaScript로 프런트 엔드를 작성할 수도 있습니다. 실제로 우리는 이후 챕터에서 폼 검증과 저장/복원 기능을 추가하여 그렇게 할 것입니다.
 
-## Project Setup
+## 프로젝트 설정
 
-The source code for this chapter is contained in the file `src/Data/AddressBook.purs`. This file starts with a module declaration and its import list:
+이 챕터의 소스 코드는 `src/Data/AddressBook.purs` 파일에 포함되어 있습니다. 이 파일은 모듈 선언과 그 임포트 리스트로 시작합니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:imports}}
 ```
 
-Here, we import several modules:
+여기서 여러 모듈을 임포트합니다:
 
-- The `Prelude` module, which contains a small set of standard definitions and functions. It re-exports many foundational modules from the `purescript-prelude` library.
-- The `Control.Plus` module, which defines the `empty` value.
-- The `Data.List` module, provided by the `lists` package, which can be installed using Spago. It contains a few functions that we will need for working with linked lists.
-- The `Data.Maybe` module, which defines data types and functions for working with optional values.
+- `Prelude` 모듈: 소수의 표준 정의와 함수들을 포함하며, `purescript-prelude` 라이브러리에서 많은 기초 모듈을 재수출합니다.
+- `Control.Plus` 모듈: `empty` 값을 정의합니다.
+- `Data.List` 모듈: Spago를 통해 설치할 수 있는 `lists` 패키지에서 제공되며, 연결 리스트를 작업하기 위해 필요한 몇 가지 함수가 포함되어 있습니다.
+- `Data.Maybe` 모듈: 선택적 값들을 작업하기 위한 데이터 타입과 함수를 정의합니다.
 
-Notice that the imports for these modules are listed explicitly in parentheses (except for `Prelude`, which is typically imported as an open import). This is generally a good practice, as it helps to avoid conflicting imports.
+이 모듈들의 임포트는 명시적으로 괄호 안에 나열되어 있습니다 (`Prelude`를 제외하고, 이는 일반적으로 열린 임포트로 임포트됩니다). 이는 충돌하는 임포트를 피하는 데 도움이 되므로 일반적으로 좋은 관행입니다.
 
-Assuming you have cloned the book's source code repository, the project for this chapter can be built using Spago, with the following commands:
+책의 소스 코드 레포를 클론했다고 가정하면, 다음 명령어를 사용하여 Spago로 이 챕터의 프로젝트를 빌드할 수 있습니다:
 
 ```text
 $ cd chapter3
 $ spago build
 ```
 
-## Simple Types
+## 간단한 타입
 
-PureScript defines three built-in types corresponding to JavaScript's primitive types: numbers, strings, and booleans. These are defined in the `Prim` module, which is implicitly imported by every module. They are called `Number`, `String`, and `Boolean`, respectively, and you can see them in PSCi by using the `:type` command to print the types of some simple values:
+PureScript는 JavaScript의 원시 타입에 해당하는 세 가지 내장 타입을 정의합니다: 숫자, 문자열, 불리언. 이들은 `Prim` 모듈에 정의되어 있으며, 각 모듈에 암시적으로 임포트됩니다. 이들은 각각 `Number`, `String`, `Boolean`이라고 불리며, 몇 가지 간단한 값의 타입을 출력하기 위해 `:type` 명령을 사용하여 PSCi에서 확인할 수 있습니다:
 
 ```text
 $ spago repl
@@ -49,23 +49,23 @@ String
 Boolean
 ```
 
-PureScript defines other built-in types: integers, characters, arrays, records, and functions.
+PureScript는 정수, 문자, 배열, 레코드 및 함수와 같은 다른 내장 타입도 정의합니다.
 
-Integers are differentiated from floating point values of type `Number` by the lack of a decimal point:
+정수는 `Number` 타입의 부동 소수점 값과는 달리 소수점이 없습니다:
 
 ```text
 > :type 1
 Int
 ```
 
-Character literals are wrapped in single quotes, unlike string literals which use double quotes:
+문자 리터럴은 문자열 리터럴이 큰따옴표를 사용하는 것과 달리 작은따옴표로 감싸져 있습니다:
 
 ```text
 > :type 'a'
 Char
 ```
 
-Arrays correspond to JavaScript arrays, but unlike in JavaScript, all elements of a PureScript array must have the same type:
+배열은 JavaScript의 배열에 해당하지만, JavaScript와 달리 PureScript 배열의 모든 요소는 동일한 타입을 가져야 합니다:
 
 ```text
 > :type [1, 2, 3]
@@ -78,9 +78,9 @@ Array Boolean
 Could not match type Int with type Boolean.
 ```
 
-The last example shows an error from the type checker, which failed to _unify_ (i.e., make equal) the types of the two elements.
+마지막 예시는 두 요소의 타입을 _통합_ (즉, 동일하게 만들기)하지 못한 타입 검사기의 오류를 보여줍니다.
 
-Records correspond to JavaScript's objects, and record literals have the same syntax as JavaScript's object literals:
+레코드는 JavaScript의 객체에 해당하며, 레코드 리터럴은 JavaScript의 객체 리터럴과 동일한 문법을 가집니다:
 
 ```text
 > author = { name: "Phil", interests: ["Functional Programming", "JavaScript"] }
@@ -91,9 +91,9 @@ Records correspond to JavaScript's objects, and record literals have the same sy
 }
 ```
 
-This type indicates that the specified object has two _fields_: a `name` field with the type `String` and an `interests` field with the type `Array String`, i.e., an array of `String`s.
+이 타입은 지정된 객체에 두 개의 _필드_ 가 있음을 나타냅니다: `name` 필드는 `String` 타입을 가지며, `interests` 필드는 `Array String` 타입을 가집니다, 즉, `String`의 배열입니다.
 
-Fields of records can be accessed using a dot, followed by the label of the field to access:
+레코드의 필드는 점을 사용하여 접근할 수 있습니다:
 
 ```text
 > author.name
@@ -103,16 +103,16 @@ Fields of records can be accessed using a dot, followed by the label of the fiel
 ["Functional Programming","JavaScript"]
 ```
 
-PureScript's functions correspond to JavaScript's functions. Functions can be defined at the top-level of a file by specifying arguments before the equals sign:
+PureScript의 함수는 JavaScript의 함수에 해당합니다. 함수는 파일의 최상위에서 인수를 이퀄 사인 앞에 지정하여 정의할 수 있습니다:
 
 ```haskell
-import Prelude -- bring the (+) operator into scope
+import Prelude -- (+) 연산자를 가져옴
 
 add :: Int -> Int -> Int
 add x y = x + y
 ```
 
-Alternatively, functions can be defined inline using a backslash character followed by a space-delimited list of argument names. To enter a multi-line declaration in PSCi, we can enter "paste mode" using the `:paste` command. In this mode, declarations are terminated using the _Control-D_ key sequence:
+또는 백슬래시 문자 뒤에 공백으로 구분된 인수 이름 목록을 사용하는 인라인 함수로 정의할 수 있습니다. 여러 줄로 된 선언을 PSCi에 입력하려면 `:paste` 명령을 사용하여 "붙여넣기 모드"로 들어갈 수 있습니다. 이 모드에서는 _Control-D_ 키 시퀀스를 사용하여 선언을 종료합니다:
 
 ```text
 > import Prelude
@@ -122,36 +122,36 @@ Alternatively, functions can be defined inline using a backslash character follo
 … ^D
 ```
 
-Having defined this function in PSCi, we can _apply_ it to its arguments by separating the two arguments from the function name by whitespace:
+이 함수를 PSCi에 정의한 후, 함수 이름 뒤에 두 인수를 공백으로 구분하여 _적용_ 할 수 있습니다:
 
 ```text
 > add 10 20
 30
 ```
 
-## Notes On Indentation
+## 들여쓰기 주의사항
 
-PureScript code is _indentation-sensitive_, just like Haskell, but unlike JavaScript. This means that the whitespace in your code is not meaningless, but rather is used to group regions of code, just like curly braces in C-like languages.
+PureScript 코드는 JavaScript와 달리 Haskell과 같이 _들여쓰기 민감_ 합니다. 이는 코드의 공백이 의미 없지 않으며, C 계열 언어의 중괄호처럼 코드 영역을 그룹화하는 데 사용됨을 의미합니다.
 
-If a declaration spans multiple lines, any lines except the first must be indented past the indentation level of the first line.
+선언이 여러 줄에 걸쳐 있으면 첫 줄을 제외한 나머지 줄은 첫 줄의 들여쓰기 수준을 초과하여 들여쓰기 되어야 합니다.
 
-Therefore, the following is a valid PureScript code:
+따라서 다음은 유효한 PureScript 코드입니다:
 
 ```haskell
 add x y z = x +
   y + z
 ```
 
-But this is not a valid code:
+그러나 이것은 유효한 코드가 아닙니다:
 
 ```haskell
 add x y z = x +
 y + z
 ```
 
-In the second case, the PureScript compiler will try to parse _two_ declarations, one for each line.
+두 번째 경우에서 PureScript 컴파일러는 각 줄에 대해 _두 개_ 의 선언을 구문 분석하려고 시도합니다.
 
-Generally, any declarations defined in the same block should be indented at the same level. For example, in PSCi, declarations in a let statement must be indented equally. This is valid:
+일반적으로 동일한 블록에 정의된 모든 선언은 동일한 수준으로 들여쓰기 되어야 합니다. 예를 들어, PSCi에서 `let` 문에 있는 선언은 동일한 수준으로 들여쓰기 되어야 합니다. 이는 유효합니다:
 
 ```text
 > :paste
@@ -160,7 +160,7 @@ Generally, any declarations defined in the same block should be indented at the 
 … ^D
 ```
 
-But this is not:
+그러나 이것은 유효하지 않습니다:
 
 ```text
 > :paste
@@ -169,61 +169,37 @@ But this is not:
 … ^D
 ```
 
-Certain PureScript keywords introduce a new block of code, in which declarations must be further-indented:
+## 타입 정의
 
-```haskell
-example x y z =
-  let
-    foo = x * y
-    bar = y * z
-  in
-    foo + bar
-```
-
-This doesn't compile:
-
-```haskell
-example x y z =
-  let
-    foo = x * y
-  bar = y * z
-  in
-    foo + bar
-```
-
-If you want to learn more (or encounter any problems), see the [Syntax](https://github.com/purescript/documentation/blob/master/language/Syntax.md#syntax) documentation.
-
-## Defining Our Types
-
-A good first step when tackling a new problem in PureScript is to write out type definitions for any values you will be working with. First, let's define a type for records in our address book:
+PureScript에서 새로운 문제를 해결할 때 좋은 첫 단계는 작업할 값들에 대한 타입 정의를 작성하는 것입니다. 먼저, 주소록의 레코드에 대한 타입을 정의합시다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:Entry}}
 ```
 
-This defines a _type synonym_ called `Entry` – the type `Entry` is equivalent to the type on the right of the equals symbol: a record type with three fields – `firstName`, `lastName`, and `address`. The two name fields will have the type `String`, and the `address` field will have the type `Address`, defined as follows:
+이는 `Entry`라는 _타입 별칭_ 을 정의합니다. `Entry` 타입은 이퀄 기호 오른쪽의 타입과 동일합니다: 세 개의 필드를 가진 레코드 타입 – `firstName`, `lastName`, `address`. 두 이름 필드는 `String` 타입을 가지며, `address` 필드는 다음과 같이 정의된 `Address` 타입을 가집니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:Address}}
 ```
 
-Note that records can contain other records.
+레코드는 다른 레코드를 포함할 수 있습니다.
 
-Now let's define a third type synonym for our address book data structure, which will be represented simply as a linked list of entries:
+이제 주소록 데이터 구조에 대한 세 번째 타입 별칭을 정의합시다. 이는 단순히 엔트리의 연결 리스트로 표현됩니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:AddressBook}}
 ```
 
-Note that `List Entry` differs from `Array Entry`, which represents an _array_ of entries.
+`List Entry`는 엔트리의 _배열_ 을 나타내는 `Array Entry`와 다릅니다.
 
-## Type Constructors and Kinds
+## 타입 생성자와 종류
 
-`List` is an example of a _type constructor_. Values do not have the type `List` directly, but rather `List a` for some type `a`. That is, `List` takes a _type argument_ `a` and _constructs_ a new type `List a`.
+`List`는 _타입 생성자_ 의 예입니다. 값들은 직접 `List` 타입을 가지지 않지만, 대신 `List a` 타입을 가집니다. 즉, `List`는 _타입 인수_ `a`를 받아 새로운 타입 `List a`를 _생성_ 합니다.
 
-Note that just like function application, type constructors are applied to other types simply by juxtaposition: the type `List Entry` is, in fact, the type constructor `List` _applied_ to the type `Entry` – it represents a list of entries.
+함수 적용과 마찬가지로, 타입 생성자는 다른 타입에 단순히 나란히 놓아 적용됩니다: `List Entry` 타입은 실제로 타입 생성자 `List`가 타입 `Entry`에 _적용된_ 것 – 엔트리의 리스트를 나타냅니다.
 
-If we try to incorrectly define a value of type `List` (by using the type annotation operator `::`), we will see a new type of error:
+우리가 `List` 타입을 잘못 정의하려고 하면(타입 주석 연산자 `::`를 사용하여), 새로운 종류의 오류를 보게 될 것입니다:
 
 ```text
 > import Data.List
@@ -231,13 +207,15 @@ If we try to incorrectly define a value of type `List` (by using the type annota
 In a type-annotated expression x :: t, the type t must have kind Type
 ```
 
-This is a _kind error_. Just like values are distinguished by their _types_, types are distinguished by their _kinds_, and just like ill-typed values result in _type errors_, _ill-kinded_ types result in _kind errors_.
+이는 _종류 오류_ 입니다. 값들이 _타입_ 으로 구분되는 것처럼, 타입들은 _종류_ 로 구분되며, 잘못된 종류의 타입들은 _종류 오류_ 를 발생시킵니다.
 
-There is a special kind called `Type` which represents the kind of all types which have values, like `Number` and `String`.
+`Type`이라는 특별한 종류가 있으며, 이는 `Number`와 `String`과 같은 값이 있는 모든 타입의 종류를 나타냅니다.
 
-There are also kinds for type constructors. For example, the kind `Type -> Type` represents a function from types to types, just like `List`. So the error here occurred because values are expected to have types with kind `Type`, but `List` has kind `Type -> Type`.
+타입 생성자에 대한 종류도 있습니다. 예를 들어, `Type -> Type` 종류는 타입에서 타입으로의 함수처럼 동작하는 것을 나타내며, 이는 `List`와 같습니다. 그래서 값들은 종류가 `Type`인 타입을 가져
 
-To find out the kind of a type, use the `:kind` command in PSCi. For example:
+야 하지만 `List`는 종류가 `Type -> Type`이기 때문에 오류가 발생했습니다.
+
+타입의 종류를 확인하려면 PSCi에서 `:kind` 명령을 사용하십시오. 예를 들어:
 
 ```text
 > :kind Number
@@ -251,11 +229,11 @@ Type -> Type
 Type
 ```
 
-PureScript's _kind system_ supports other interesting kinds, which we will see later in the book.
+PureScript의 _종류 시스템_ 은 책의 뒷부분에서 더 자세히 볼 수 있는 다른 흥미로운 종류도 지원합니다.
 
-## Quantified Types
+## 양화된 타입
 
-For illustration purposes, let's define a primitive function that takes any two arguments and returns the first one:
+설명을 위해, 두 개의 인수를 받아 첫 번째 인수를 반환하는 기본 함수를 정의해 봅시다:
 
 ```text
 > :paste
@@ -264,32 +242,31 @@ For illustration purposes, let's define a primitive function that takes any two 
 … ^D
 ```
 
-> Note that if you use `:type` to ask about the type of `constantlyFirst`, it will be more verbose:
+> `constantlyFirst`의 타입을 묻기 위해 `:type`을 사용하면 더 자세히 설명된 버전을 확인할 수 있습니다:
 >
 > ```text
 > : type constantlyFirst
 > forall (a :: Type) (b :: Type). a -> b -> a
 > ```
 >
-> The type signature contains additional kind information, which explicitly notes that `a` and `b` should be concrete types.
+> 이 타입 서명은 `a`와 `b`가 구체적인 타입이어야 함을 명시적으로 나타냅니다.
 
-The keyword `forall` indicates that `constantlyFirst` has a _universally quantified type_. It means we can substitute any types for `a` and `b` – `constantlyFirst` will work with these types.
+`forall` 키워드는 `constantlyFirst`가 _보편 양화 타입_ 을 가지고 있음을 나타냅니다. 이는 우리가 `a`와 `b`에 대해 어떤 타입을 대입하든 – `constantlyFirst`가 이 타입들로 동작할 수 있음을 의미합니다.
 
-For example, we might choose the type `a` to be `Int` and `b` to be `String`. In that case, we can _specialize_ the type of `constantlyFirst` to
+예를 들어, `a` 타입을 `Int`로, `b` 타입을 `String`으로 선택할 수 있습니다. 이 경우, `constantlyFirst`의 타입을 다음과 같이 _특수화_ 할 수 있습니다:
 
 ```text
 Int -> String -> Int
 ```
 
-We don't have to indicate in code that we want to specialize a quantified type – it happens automatically. For example, we can use `constantlyFirst` as if it had this type already:
+코드에서 양화된 타입을 특수화하고자 명시할 필요는 없습니다 – 자동으로 발생합니다. 예를 들어, `constantlyFirst`를 이미 이 타입을 가진 것처럼 사용할 수 있습니다:
 
 ```text
 > constantlyFirst 3 "ignored"
-
 3
 ```
 
-While we can choose any types for `a` and `b`, the return type of `constantlyFirst` has to be the same as the type of the first argument (because both of them are "tied" to the same `a`):
+우리는 `a`와 `b`에 대해 어떤 타입이든 선택할 수 있지만, `constantlyFirst`의 반환 타입은 첫 번째 인수의 타입과 동일해야 합니다 (두 인수 모두 동일한 `a`에 "묶여" 있기 때문입니다):
 
 ```text
 :type constantlyFirst true "ignored"
@@ -299,39 +276,39 @@ Boolean
 String
 ```
 
-## Displaying Address Book Entries
+## 주소록 항목 표시
 
-Let's write our first function, which will render an address book entry as a string. We start by giving the function a type. This is optional, but good practice, since it acts as a form of documentation. In fact, the PureScript compiler will give a warning if a top-level declaration does not contain a type annotation. A type declaration separates the name of a function from its type with the `::` symbol:
+이제 주소록 항목을 문자열로 렌더링하는 첫 번째 함수를 작성해 봅시다. 우리는 함수에 타입을 부여하는 것부터 시작할 것입니다. 이는 선택 사항이지만, 문서화의 일환으로 좋은 습관입니다. 실제로, PureScript 컴파일러는 최상위 선언에 타입 주석이 없으면 경고를 제공합니다. 타입 선언은 함수 이름과 그 타입을 `::` 기호로 구분합니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:showEntry_signature}}
 ```
 
-This type signature says that `showEntry` is a function that takes an `Entry` as an argument and returns a `String`. Here is the code for `showEntry`:
+이 타입 서명은 `showEntry`가 `Entry`를 인수로 받아 `String`을 반환하는 함수임을 나타냅니다. 다음은 `showEntry`의 코드입니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:showEntry_implementation}}
 ```
 
-This function concatenates the three fields of the `Entry` record into a single string, using the `showAddress` function to turn the record inside the `address` field into a `String`. `showAddress` is defined similarly:
+이 함수는 `Entry` 레코드의 세 필드를 단일 문자열로 연결하며, `address` 필드 안의 레코드를 `String`으로 변환하는 `showAddress` 함수를 사용합니다. `showAddress`도 유사하게 정의됩니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:showAddress}}
 ```
 
-A function definition begins with the name of the function, followed by a list of argument names. The result of the function is specified after the equals sign. Fields are accessed with a dot, followed by the field name. In PureScript, string concatenation uses the diamond operator (`<>`), instead of the plus operator like in JavaScript.
+함수 정의는 함수의 이름으로 시작하며, 인수 이름 목록이 뒤따릅니다. 함수의 결과는 이퀄 기호 뒤에 지정됩니다. 필드는 점을 사용하여 접근하며, 필드 이름이 뒤따릅니다. PureScript에서 문자열 연결은 JavaScript와 같은 더하기 연산자가 아닌 다이아몬드 연산자 (`<>`)를 사용합니다.
 
-## Test Early, Test Often
+## 일찍 테스트하고 자주 테스트하기
 
-The PSCi interactive mode allows for rapid prototyping with immediate feedback, so let's use it to verify that our first few functions behave as expected.
+PSCi 인터랙티브 모드는 즉각적인 피드백을 제공하여 빠른 프로토타이핑을 가능하게 하므로, 이를 사용하여 첫 몇 개의 함수가 예상대로 동작하는지 확인해 봅시다.
 
-First, build the code you've written:
+먼저 작성한 코드를 빌드하세요:
 
 ```text
 $ spago build
 ```
 
-Next, load PSCi, and use the `import` command to import your new module:
+다음으로, PSCi를 로드하고 `import` 명령을 사용하여 새 모듈을 가져옵니다:
 
 ```text
 $ spago repl
@@ -339,87 +316,84 @@ $ spago repl
 > import Data.AddressBook
 ```
 
-We can create an entry by using a record literal, which looks just like an anonymous object in JavaScript.
+레코드 리터럴을 사용하여 주소록 항목을 생성할 수 있습니다. 이는 JavaScript에서 익명 객체와 매우 유사합니다:
 
 ```text
 > address = { street: "123 Fake St.", city: "Faketown", state: "CA" }
 ```
 
-Now, try applying our function to the example:
+이제 예제를 적용하여 우리의 함수를 테스트해 봅시다:
 
 ```text
 > showAddress address
-
 "123 Fake St., Faketown, CA"
 ```
 
-Let's also test `showEntry` by creating an address book entry record containing our example address:
+`showEntry`를 테스트하기 위해 예제 주소를 포함하는 주소록 항목 레코드를 생성해 봅시다:
 
 ```text
 > entry = { firstName: "John", lastName: "Smith", address: address }
 > showEntry entry
-
 "Smith, John: 123 Fake St., Faketown, CA"
 ```
 
-## Creating Address Books
+## 주소록 생성
 
-Now let's write some utility functions for working with address books. We will need a value representing an empty address book: an empty list.
+이제 주소록을 작업하기 위한 유틸리티 함수를 작성해 봅시다. 빈 주소록을 나타내는 값, 즉 빈 리스트가 필요합니다.
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:emptyBook}}
 ```
 
-We will also need a function for inserting a value into an existing address book. We will call this function `insertEntry`. Start by giving its type:
+기존 주소록에 값을 삽입하기 위한 함수도 필요합니다. 이 함수를 `insertEntry`라고 부르겠습니다. 타입을 지정하는 것부터 시작해 봅시다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:insertEntry_signature}}
 ```
 
-This type signature says that `insertEntry` takes an `Entry` as its first argument, an `AddressBook` as a second argument, and returns a new `AddressBook`.
+이 타입 서명은 `insertEntry`가 첫 번째 인수로 `Entry`를, 두 번째 인수로 `AddressBook`을 받아 새로운 `AddressBook`을 반환하는 함수를 나타냅니다.
 
-We don't modify the existing `AddressBook` directly. Instead, we return a new `AddressBook`, which contains the same data. As such, `AddressBook` is an example of an _immutable data structure_. This is an important idea in PureScript – mutation is a side-effect of code and inhibits our ability to reason effectively about its behavior, so we prefer pure functions and immutable data where possible.
+우리는 기존 `AddressBook`을 직접 수정하지 않습니다. 대신, 동일한 데이터를 포함하는 새로운 `AddressBook`을 반환합니다. 따라서 `AddressBook`은 _불변 데이터 구조_ 의 예입니다. 이는 PureScript에서 중요한 개념입니다. 변경은 코드의 부수 효과로 인해 코드의 동작을 효과적으로 추론하는 것을 방해하기 때문에 가능한 순수 함수와 불변 데이터를 선호합니다.
 
-To implement `insertEntry`, we can use the `Cons` function from `Data.List`. To see its type, open PSCi and use the `:type` command:
+`insertEntry`를 구현하기 위해 `Data.List`의 `Cons` 함수를 사용할 수 있습니다. PSCi를 열고 `:type` 명령을 사용하여 그 타입을 확인해 보세요:
 
 ```text
 $ spago repl
 
 > import Data.List
 > :type Cons
-
 forall (a :: Type). a -> List a -> List a
 ```
 
-This type signature says that `Cons` takes a value of some type `a`, takes a list of elements of type `a`, and returns a new list with entries of the same type. Let's specialize this with `a` as our `Entry` type:
+이 타입 서명은 `Cons`가 어떤 타입 `a`의 값을 받아 동일한 타입의 요소를 가진 리스트를 받아 새로운 리스트를 반환함을 나타냅니다. 이를 `Entry` 타입으로 특수화해 봅시다:
 
 ```haskell
 Entry -> List Entry -> List Entry
 ```
 
-But `List Entry` is the same as `AddressBook`, so this is equivalent to
+그러나 `List Entry`는 `AddressBook`과 동일하므로 이는 다음과 같습니다:
 
 ```haskell
 Entry -> AddressBook -> AddressBook
 ```
 
-In our case, we already have the appropriate inputs: an `Entry`, and an `AddressBook`, so can apply `Cons` and get a new `AddressBook`, which is exactly what we wanted!
+우리의 경우, 이미 적절한 입력값을 가지고 있습니다: `Entry`와 `AddressBook`. 따라서 `Cons`를 적용하여 새로운 `AddressBook`을 얻을 수 있으며, 이는 우리가 원했던 것입니다!
 
-Here is our implementation of `insertEntry`:
+다음은 `insertEntry`의 구현입니다:
 
 ```haskell
 insertEntry entry book = Cons entry book
 ```
 
-This brings the two arguments `entry` and `book` into scope – on the left-hand side of the equals symbol – and then applies the `Cons` function to create the result.
+이는 이퀄 기호 왼쪽에 두 인수 `entry`와 `book`을 스코프에 가져오고, `Cons` 함수를 적용하여 결과를 생성합니다.
 
-## Curried Functions
+## 커리 함수
 
-Functions in PureScript take exactly one argument. While it looks like the `insertEntry` function takes two arguments, it is an example of a _curried function_. In PureScript, all functions are considered curried.
+PureScript의 함수는 정확히 하나의 인수를 받습니다. `insertEntry` 함수가 두 개의 인수를 받는 것처럼 보이지만, 이는 _커리 함수_ 의 예입니다. PureScript에서 모든 함수는 커리 함수로 간주됩니다.
 
-Currying means converting a function that takes multiple arguments into a function that takes them one at a time. When we call a function, we pass it one argument, and it returns another function that also takes one argument until all arguments are passed.
+커링은 여러 인수를 받는 함수를 각 인수를 하나씩 받는 함수로 변환하는 것을 의미합니다. 우리가 함수를 호출할 때, 하나의 인수를 전달하고, 또 다른 하나의 인수를 받는 함수를 반환합니다. 모든 인수가 전달될 때까지 계속됩니다.
 
-For example, when we pass `5`  to `add`, we get another function, which takes an int, adds 5 to it, and returns the sum as a result:
+예를 들어, `5`를 `add` 함수에 전달하면 또 다른 함수를 얻으며, 이 함수는 `int`를 받아 `5`를 더한 다음 결과를 반환합니다:
 
 ```haskell
 add :: Int -> Int -> Int
@@ -429,12 +403,14 @@ addFive :: Int -> Int
 addFive = add 5
 ```
 
-`addFive` is the result of _partial application_, which means we pass less than the total number of arguments to a function that takes multiple arguments. Let's give it a try:
+`addFive`는 _부분 적용_ 의 결과이며, 이는 여러 인수를 받는 함수에 총 인수의 수보다 적은 인수를 전달하는 것을 의미합니다. 이를 시험해 봅시다:
 
-> Note that you must define the `add` function if you haven't already:
+> `add` 함수를 아직 정의하지 않았다면 다음을 참고하십시오:
 >
 > ```text
-> > import Prelude
+> >
+
+ import Prelude
 > > :paste
 >… add :: Int -> Int -> Int
 >… add x y = x + y
@@ -454,21 +430,21 @@ addFive = add 5
 6
 ```
 
-To better understand currying and partial application, try making a few other functions, for example, out of `add`. And when you're done, let's return to the `insertEntry`.
+커링과 부분 적용을 더 잘 이해하려면, `add`를 사용하여 다른 함수를 만들어 보십시오. 그리고 `insertEntry`로 돌아갑시다.
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:insertEntry_signature}}
 ```
 
-The `->` operator (in the type signature) associates to the right, which means that the compiler parses the type as
+타입 서명에서 `->` 연산자는 오른쪽으로 결합하므로, 컴파일러는 타입을 다음과 같이 해석합니다:
 
 ```haskell
 Entry -> (AddressBook -> AddressBook)
 ```
 
-`insertEntry` takes a single argument, an `Entry`, and returns a new function, which in turn takes a single `AddressBook` argument and returns a new `AddressBook`.
+`insertEntry`는 단일 인수 `Entry`를 받아 새로운 함수를 반환하며, 이 함수는 단일 `AddressBook` 인수를 받아 새로운 `AddressBook`을 반환합니다.
 
-This means we can _partially apply_ `insertEntry` by specifying only its first argument, for example. In PSCi, we can see the result type:
+이는 `insertEntry`를 부분적으로 적용하여 첫 번째 인수만 지정할 수 있음을 의미합니다. 예를 들어, PSCi에서 결과 타입을 확인할 수 있습니다:
 
 ```text
 > :type insertEntry entry
@@ -476,71 +452,71 @@ This means we can _partially apply_ `insertEntry` by specifying only its first a
 AddressBook -> AddressBook
 ```
 
-As expected, the return type was a function. We can apply the resulting function to a second argument:
+예상대로 반환 타입은 함수였습니다. 반환된 함수를 두 번째 인수에 적용할 수 있습니다:
 
 ```text
 > :type (insertEntry entry) emptyBook
 AddressBook
 ```
 
-Note though, that the parentheses here are unnecessary – the following is equivalent:
+여기서 괄호는 불필요합니다 – 다음은 동일합니다:
 
 ```text
 > :type insertEntry entry emptyBook
 AddressBook
 ```
 
-This is because function application associates to the left, which explains why we can specify function arguments one after the other, separated by whitespace.
+이는 함수 적용이 왼쪽으로 결합하므로, 함수 인수를 공백으로 구분하여 하나씩 지정할 수 있음을 설명합니다.
 
-The `->` operator in function types is a _type constructor_ for functions. It takes two type arguments: the function's argument type and the return type – the left and right operands, respectively.
+함수 타입의 `->` 연산자는 함수에 대한 _타입 생성자_ 입니다. 이는 함수의 인수 타입과 반환 타입을 가져갑니다 – 각각 왼쪽과 오른쪽 피연산자입니다.
 
-Note that in the rest of the book, I will talk about things like "functions of two arguments". However, it is to be understood that this means a curried function, taking a first argument and returning a function that takes the second.
+책의 나머지 부분에서는 "두 개의 인수를 가진 함수"와 같은 표현을 사용할 것입니다. 그러나 이는 첫 번째 인수를 받아 두 번째 인수를 받는 함수를 반환하는 커리 함수를 의미함을 이해해야 합니다.
 
-Now consider the definition of `insertEntry`:
+이제 `insertEntry` 정의를 고려해 봅시다:
 
 ```haskell
 insertEntry :: Entry -> AddressBook -> AddressBook
 insertEntry entry book = Cons entry book
 ```
 
-If we explicitly parenthesize the right-hand side, we get `(Cons entry) book`. That is, `insertEntry entry` is a function whose argument is just passed along to the `(Cons entry)` function. But if two functions have the same result for every input, then they are the same! So we can remove the argument `book` from both sides:
+오른쪽을 명시적으로 괄호로 묶으면 `(Cons entry) book`을 얻습니다. 즉, `insertEntry entry`는 인수를 `Cons entry` 함수로 전달하는 함수입니다. 그러나 두 함수가 모든 입력에 대해 동일한 결과를 가진다면, 이는 동일한 함수입니다! 따라서 양쪽에서 인수 `book`을 제거할 수 있습니다:
 
 ```haskell
 insertEntry :: Entry -> AddressBook -> AddressBook
 insertEntry entry = Cons entry
 ```
 
-But now, by the same argument, we can remove `entry` from both sides:
+이제 같은 논리로 인수 `entry`를 양쪽에서 제거할 수 있습니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:insertEntry}}
 ```
 
-This process, called _eta conversion_, can be used (along with other techniques) to rewrite functions in _point-free form_, which means functions defined without reference to their arguments.
+이 과정은 _에타 변환_ 이라 불리며, 다른 기술들과 함께 _인수 없는 형태_ 로 함수 재작성에 사용할 수 있습니다.
 
-In the case of `insertEntry`, _eta conversion_ has resulted in a very clear definition of our function – "`insertEntry` is just cons on lists". However, it is arguable whether the point-free form is better in general.
+`insertEntry`의 경우, _에타 변환_ 은 우리의 함수 정의를 매우 명확하게 만들었습니다 – "`insertEntry`는 리스트에서 cons 입니다". 그러나 인수 없는 형태가 일반적으로 더 나은지는 논란의 여지가 있습니다.
 
-## Property Accessors
+## 속성 접근자
 
-One common pattern is to use a function to access individual fields (or "properties") of a record. An inline function to extract an `Address` from an `Entry` could be written as:
+레코드의 개별 필드(또는 "속성")에 접근하는 함수를 사용하는 일반적인 패턴이 있습니다. `Entry`에서 `Address`를 추출하는 인라인 함수는 다음과 같이 작성될 수 있습니다:
 
 ```haskell
 \entry -> entry.address
 ```
 
-PureScript also allows [_property accessor_](https://github.com/purescript/documentation/blob/master/language/Syntax.md#property-accessors) shorthand, where an underscore acts as the anonymous function argument, so the inline function above is equivalent to:
+PureScript는 또한 _속성 접근자_ 줄임 표현을 허용합니다. 여기서 밑줄은 익명 함수 인수로 작동하며, 위의 인라인 함수는 다음과 동일합니다:
 
 ```haskell
 _.address
 ```
 
-This works with any number of levels or properties, so a function to extract the city associated with an `Entry` could be written as:
+이는 여러 수준이나 속성에 대해서도 작동하므로, `Entry`와 관련된 도시를 추출하는 함수는 다음과 같이 작성할 수 있습니다:
 
 ```haskell
 _.address.city
 ```
 
-For example:
+예를 들어:
 
 ```text
 > address = { street: "123 Fake St.", city: "Faketown", state: "CA" }
@@ -552,13 +528,13 @@ For example:
 "Faketown"
 ```
 
-## Querying the Address Book
+## 주소록 조회
 
-The last function we need to implement for our minimal address book application will look up a person by name and return the correct `Entry`. This will be a nice application of building programs by composing small functions – a key idea from functional programming.
+최소한의 주소록 애플리케이션을 위해 구현해야 할 마지막 함수는 이름으로 사람을 조회하고 올바른 `Entry`를 반환하는 함수입니다. 이는 작은 함수들을 구성하여 프로그램을 작성하는 좋은 예가 될 것입니다 – 함수형 프로그래밍의 핵심 아이디어입니다.
 
-We can filter the address book, keeping only those entries with the correct first and last names. Then we can return the head (i.e., first) element of the resulting list.
+주소록을 필터링하여 올바른 이름을 가진 항목만 유지한 다음, 결과 리스트의 첫 번째 요소를 반환할 수 있습니다.
 
-With this high-level specification of our approach, we can calculate the type of our function. First, open PSCi, and find the types of the `filter` and `head` functions:
+이 접근 방식의 높은 수준의 사양을 사용하여 함수의 타입을 계산할 수 있습니다. 먼저, PSCi를 열고 `filter`와 `head` 함수의 타입을 확인합니다:
 
 ```text
 $ spago repl
@@ -573,13 +549,13 @@ forall (a :: Type). (a -> Boolean) -> List a -> List a
 forall (a :: Type). List a -> Maybe a
 ```
 
-Let's pick apart these two types to understand their meaning.
+이 두 타입을 이해하기 위해 하나씩 살펴봅시다.
 
-`filter` is a curried function of two arguments. Its first argument is a function, which takes an element of the list and returns a `Boolean` value. Its second argument is a list of elements, and the return value is another list.
+`filter`는 두 개의 인수를 가지는 커리 함수입니다. 첫 번째 인수는 리스트의 요소를 받아 `Boolean` 값을 반환하는 함수입니다. 두 번째 인수는 요소 리스트이며, 반환 값은 또 다른 리스트입니다.
 
-`head` takes a list as its argument and returns a type we haven't seen before: `Maybe a`. `Maybe a` represents an optional value of type `a`, and provides a type-safe alternative to using `null` to indicate a missing value in languages like JavaScript. We will see it again in more detail in later chapters.
+`head`는 리스트를 인수로 받아 우리가 이전에 본 적 없는 타입 `Maybe a`를 반환합니다. `Maybe a`는 타입 `a`의 선택적 값을 나타내며, JavaScript와 같은 언어에서 누락된 값을 나타내기 위해 `null`을 사용하는 것에 대한 타입 안전한 대안을 제공합니다. 이는 이후 챕터에서 더 자세히 살펴볼 것입니다.
 
-The universally quantified types of `filter` and `head` can be _specialized_ by the PureScript compiler, to the following types:
+`filter`와 `head`의 보편 양화 타입은 PureScript 컴파일러에 의해 다음 타입으로 _특수화_ 될 수 있습니다:
 
 ```haskell
 filter :: (Entry -> Boolean) -> AddressBook -> AddressBook
@@ -587,19 +563,19 @@ filter :: (Entry -> Boolean) -> AddressBook -> AddressBook
 head :: AddressBook -> Maybe Entry
 ```
 
-We know that we will need to pass the first and last names that we want to search for as arguments to our function.
+우리는 조회할 이름을 함수의 인수로 전달해야 할 필요가 있음을 알고 있습니다.
 
-We also know that we will need a function to pass to `filter`. Let's call this function `filterEntry`. `filterEntry` will have type `Entry -> Boolean`. The application `filter filterEntry` will then have type `AddressBook -> AddressBook`. If we pass the result of this function to the `head` function, we get our result of type `Maybe Entry`.
+또한 `filter`에 전달할 함수를 정의해야 함을 알고 있습니다. 이 함수를 `filterEntry`라고 부릅시다. `filterEntry`는 `Entry -> Boolean` 타입을 가집니다. `filter filterEntry`의 적용은 `AddressBook -> AddressBook` 타입을 가집니다. 이 함수의 결과를 `head` 함수에 전달하면 `Maybe Entry` 타입의 결과를 얻습니다.
 
-Putting these facts together, a reasonable type signature for our function, which we will call `findEntry`, is:
+이 사실들을 종합하면, `findEntry`라고 부를 함수의 합리적인 타입 서명은 다음과 같습니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:findEntry_signature}}
 ```
 
-This type signature says that `findEntry` takes two strings: the first and last names, takes an `AddressBook`, and returns an optional `Entry`. The optional result will contain a value only if the name is found in the address book.
+이 타입 서명은 `findEntry`가 두 개의 문자열, 즉 이름과 성을 받아 `AddressBook`을 받고 선택적 `Entry`를 반환함을 나타냅니다. 선택적 결과는 이름이 주소록에 있는 경우에만 값을 포함합니다.
 
-And here is the definition of `findEntry`:
+다음은 `findEntry`의 정의입니다:
 
 ```haskell
 findEntry firstName lastName book = head (filter filterEntry book)
@@ -608,89 +584,91 @@ findEntry firstName lastName book = head (filter filterEntry book)
     filterEntry entry = entry.firstName == firstName && entry.lastName == lastName
 ```
 
-Let's go over this code step by step.
+이 코드를 단계별로 살펴봅시다.
 
-`findEntry` brings three names into scope: `firstName` and `lastName`, both representing strings, and `book`, an `AddressBook`.
+`findEntry`는 `firstName`과 `lastName` 두 개의 문자열 인수와 `book`이라는 `AddressBook`을 스코프에 가져옵니다.
 
-The right-hand side of the definition combines the `filter` and `head` functions: first, the list of entries is filtered, and the `head` function is applied to the result.
+정의의 오른쪽은 `filter`와 `head` 함수가 결합되어 있습니다: 먼저, 엔트리 리스트를 필터링하고 `head` 함수가 결과에 적용됩니다.
 
-The predicate function `filterEntry` is defined as an auxiliary declaration inside a `where` clause. This way, the `filterEntry` function is available inside the definition of our function, but not outside it. Also, it can depend on the arguments to the enclosing function, which is essential here because `filterEntry` uses the `firstName` and `lastName` arguments to filter the specified `Entry`.
+필터 함수 `filterEntry`는 `where` 절 내에 보조 선언으로 정의됩니다. 이렇게 하면 `filterEntry` 함수가 함수의 정의 내에서 사용 가능하지만 외부에서는 사용되지 않습니다. 또한, 이는 해당 인수가 포함된 인클로징 함수의 인수에 의존할 수 있습니다. 여기서 `filterEntry`는 `firstName`과 `lastName` 인수를 사용하여 지정된 `Entry`를 필터링하기 때문에 필수적입니다.
 
-Note that, just like for top-level declarations, it was unnecessary to specify a type signature for `filterEntry`. However, doing so is recommended as a form of documentation.
+최상위 선언과 마찬가지로 `filterEntry`에 대한 타입 서명을 지정할 필요는 없었습니다. 그러나 문서화의 한 형태로 권장됩니다.
 
-## Infix Function Application
+## 인픽스 함수 적용
 
-Most functions discussed so far used _prefix_ function application, where the function name was put _before_ the arguments. For example, when using the `insertEntry` function to add an `Entry` (`john`) to an empty `AddressBook`, we might write:
+지금까지 논의된 대부분의 함수는 _프리픽스_ 함수 적용을 사용했습니다. 함수 이름이 인수 _앞에_ 오는 방식입니다. 예를 들어, `insertEntry` 함수를 사용하여 빈 `AddressBook`에 `Entry` (`john`)를 추가할 때 다음과 같이 쓸 수 있습니다:
 
 ```haskell
 > book1 = insertEntry john emptyBook
 ```
 
-However, this chapter has also included examples of _infix_ [binary operators](https://github.com/purescript/documentation/blob/master/language/Syntax.md#binary-operators), such as the `==` operator in the definition of `filterEntry`, where the operator is put _between_ the two arguments. These infix operators are defined in the PureScript source as infix aliases for their underlying _prefix_ implementations. For example, `==` is defined as an infix alias for the prefix `eq` function with the line:
+그러나 이 챕터
+
+에는 인수 _사이에_ 오는 _인픽스_ [이항 연산자](https://github.com/purescript/documentation/blob/master/language/Syntax.md#binary-operators) 의 예도 포함되어 있습니다. 예를 들어, `filterEntry`의 정의에서 `==` 연산자입니다. 이는 인수 _사이에_ 오는 인픽스 연산자입니다. 이러한 인픽스 연산자는 프리픽스 구현의 인픽스 별칭으로 PureScript 소스에 정의됩니다. 예를 들어, `==`는 프리픽스 `eq` 함수의 인픽스 별칭으로 다음과 같이 정의됩니다:
 
 ```haskell
 infix 4 eq as ==
 ```
 
-Therefore `entry.firstName == firstName` in `filterEntry` could be replaced with the `eq entry.firstName firstName`. We'll cover a few more examples of defining infix operators later in this section.
+따라서 `filterEntry`에서 `entry.firstName == firstName`은 `eq entry.firstName firstName`으로 대체될 수 있습니다. 이 섹션의 뒷부분에서 인픽스 연산자를 정의하는 몇 가지 예를 더 다룰 것입니다.
 
-In some situations, putting a prefix function in an infix position as an operator leads to more readable code. One example is the `mod` function:
+프리픽스 함수를 인픽스 위치에서 연산자로 사용하는 것이 더 읽기 쉬운 코드로 이어지는 상황이 있습니다. 한 가지 예는 `mod` 함수입니다:
 
 ```text
 > mod 8 3
 2
 ```
 
-The above usage works fine but is awkward to read. A more familiar phrasing is "eight mod three", which you can achieve by wrapping a prefix function in backticks (\`):
+위의 사용법은 괜찮지만 읽기에는 어색합니다. 더 익숙한 표현은 "eight mod three"이며, 이는 프리픽스 함수를 역따옴표(\`)로 묶어서 얻을 수 있습니다:
 
 ```text
 > 8 `mod` 3
 2
 ```
 
-In the same way, wrapping `insertEntry` in backticks turns it into an infix operator, such that `book1` and `book2` below are equivalent:
+같은 방식으로 `insertEntry`를 역따옴표로 묶으면 인픽스 연산자가 되어 다음과 같이 `book1`과 `book2`는 동일해집니다:
 
 ```haskell
 book1 = insertEntry john emptyBook
 book2 = john `insertEntry` emptyBook
 ```
 
-We can make an `AddressBook` with multiple entries by using multiple applications of `insertEntry` as a prefix function (`book3`) or as an infix operator (`book4`) as shown below:
+여러 개의 `insertEntry`를 프리픽스 함수(`book3`) 또는 인픽스 연산자(`book4`)로 사용하여 여러 항목이 있는 `AddressBook`을 만들 수 있습니다:
 
 ```haskell
 book3 = insertEntry john (insertEntry peggy (insertEntry ned emptyBook))
 book4 = john `insertEntry` (peggy `insertEntry` (ned `insertEntry` emptyBook))
 ```
 
-We can also define an infix operator alias (or synonym) for `insertEntry.` We'll arbitrarily choose `++` for this operator, give it a [precedence](https://github.com/purescript/documentation/blob/master/language/Syntax.md#precedence) of `5`, and make it right [associative](https://github.com/purescript/documentation/blob/master/language/Syntax.md#associativity) using `infixr`:
+`insertEntry`에 대한 인픽스 연산자 별칭(또는 동의어)을 정의할 수도 있습니다. 임의로 `++`를 이 연산자로 선택하고, [우선순위](https://github.com/purescript/documentation/blob/master/language/Syntax.md#precedence) 를 `5`로 지정하고, 오른쪽 [결합](https://github.com/purescript/documentation/blob/master/language/Syntax.md#associativity) 을 `infixr`를 사용하여 만듭니다:
 
 ```haskell
 infixr 5 insertEntry as ++
 ```
 
-This new operator lets us rewrite the above `book4` example as:
+이 새로운 연산자를 사용하면 위의 `book4` 예제를 다음과 같이 다시 쓸 수 있습니다:
 
 ```haskell
 book5 = john ++ (peggy ++ (ned ++ emptyBook))
 ```
 
-The right associativity of our new `++` operator lets us get rid of the parentheses without changing the meaning:
+우리의 새로운 `++` 연산자의 오른쪽 결합성은 의미를 변경하지 않고 괄호를 제거할 수 있게 합니다:
 
 ```haskell
 book6 = john ++ peggy ++ ned ++ emptyBook
 ```
 
-Another common technique for eliminating parens is to use `apply`'s infix operator `$`, along with your standard prefix functions.
+괄호를 제거하는 또 다른 방법은 `apply`의 인픽스 연산자 `$`를 사용하는 것입니다. 표준 프리픽스 함수와 함께 사용됩니다.
 
-For example, the earlier `book3` example could be rewritten as:
+예를 들어, 이전의 `book3` 예제를 다음과 같이 다시 쓸 수 있습니다:
 
 ```haskell
 book7 = insertEntry john $ insertEntry peggy $ insertEntry ned emptyBook
 ```
 
-Substituting `$` for parens is usually easier to type and (arguably) easier to read. A mnemonic to remember the meaning of this symbol is to think of the dollar sign as being drawn from two parens that are also being crossed-out, suggesting the parens are now unnecessary.
+괄호를 `$`로 대체하는 것은 일반적으로 타이핑하기 더 쉽고 (논란의 여지가 있지만) 읽기 더 쉽습니다. 이 기호의 의미를 기억하는 방법으로는 달러 기호를 두 괄호로 그려서 교차된 것으로 생각할 수 있습니다. 이는 괄호가 이제 필요하지 않음을 나타냅니다.
 
-Note that `$` isn't a special syntax hardcoded into the language. It's simply the infix operator for a regular function called `apply`, which is defined in `Data.Function` as follows:
+참고로 `$`는 언어에 하드코딩된 특별한 문법이 아닙니다. 이는 `Data.Function`에 다음과 같이 정의된 일반 함수 `apply`의 인픽스 연산자입니다:
 
 ```haskell
 apply :: forall a b. (a -> b) -> a -> b
@@ -699,17 +677,17 @@ apply f x = f x
 infixr 0 apply as $
 ```
 
-The `apply` function takes another function (of type `(a -> b)`) as its first argument and a value (of type `a`) as its second argument, then calls that function with that value. If it seems like this function doesn't contribute anything meaningful, you are absolutely correct! Your program is logically identical without it (see [referential transparency](https://en.wikipedia.org/wiki/Referential_transparency)). The syntactic utility of this function comes from the special properties assigned to its infix operator. `$` is a right-associative (`infixr`), low precedence (`0`) operator, which lets us remove sets of parentheses for deeply-nested applications.
+`apply` 함수는 함수(타입 `(a -> b)`)를 첫 번째 인수로 받고 값(타입 `a`)을 두 번째 인수로 받아 그 값으로 함수를 호출합니다. 이 함수가 의미 있는 기여를 하지 않는 것처럼 보인다면, 완전히 맞습니다! 프로그램은 논리적으로 동일합니다(참고: [참조 투명성](https://en.wikipedia.org/wiki/Referential_transparency)). 이 함수의 구문 유틸리티는 인픽스 연산자에 할당된 특수 속성에서 비롯됩니다. `$`는 오른쪽 결합(`infixr`), 낮은 우선순위(`0`) 연산자로, 깊게 중첩된 적용을 위한 괄호 집합을 제거할 수 있게 합니다.
 
-Another parens-busting opportunity for the `$` operator is in our earlier `findEntry` function:
+다른 괄호 제거 기회는 이전의 `findEntry` 함수에서 `$` 연산자를 사용하는 것입니다:
 
 ```haskell
 findEntry firstName lastName book = head $ filter filterEntry book
 ```
 
-We'll see an even more elegant way to rewrite this line with "function composition" in the next section.
+다음 섹션에서 "함수 합성"으로 이 줄을 더 우아하게 다시 작성하는 방법을 볼 것입니다.
 
-If you'd like to use a concise infix operator alias as a prefix function, you can surround it in parentheses:
+간결한 인픽스 연산자 별칭을 프리픽스 함수로 사용하려면 괄호로 묶을 수 있습니다:
 
 ```text
 > 8 + 3
@@ -719,7 +697,7 @@ If you'd like to use a concise infix operator alias as a prefix function, you ca
 11
 ```
 
-Alternatively, operators can be partially applied by surrounding the expression with parentheses and using `_` as an operand in an [operator section](https://github.com/purescript/documentation/blob/master/language/Syntax.md#operator-sections). You can think of this as a more convenient way to create simple anonymous functions (although in the below example, we're then binding that anonymous function to a name, so it's not so anonymous anymore):
+또한, 연산자를 부분적으로 적용하려면 표현식을 괄호로 묶고 `_`를 피연산자로 사용하여 [연산자 섹션](https://github.com/purescript/documentation/blob/master/language/Syntax.md#operator-sections)으로 만들 수 있습니다. 이는 간단한 익명 함수를 만드는 더 편리한 방법으로 생각할 수 있습니다 (다음 예제에서는, 그 익명 함수를 이름에 바인딩하므로 더 이상 익명은 아니지만):
 
 ```text
 > add3 = (3 + _)
@@ -727,7 +705,7 @@ Alternatively, operators can be partially applied by surrounding the expression 
 5
 ```
 
-To summarize, the following are equivalent definitions of a function that adds `5` to its argument:
+요약하자면, 다음은 `5`를 인수로 더하는 함수의 동일한 정의입니다:
 
 ```haskell
 add5 x = 5 + x
@@ -740,55 +718,57 @@ add5   = (5 + _)
 add5 x = 5 `(+)` x  -- Yo Dawg, I herd you like infix, so we put infix in your infix!
 ```
 
-## Function Composition
+## 함수 합성
 
-Just like we were able to simplify the `insertEntry` function by using eta conversion, we can simplify the definition of `findEntry` by reasoning about its arguments.
+`insertEntry` 함수를 에타 변환을 사용하여 단순화할 수 있었던 것처럼, `findEntry`의 정의를 인수에 대해 추론하여 단순화할 수 있습니다.
 
-Note that the `book` argument is passed to the `filter filterEntry` function, and the result of this application is passed to `head`. In other words, `book` is passed to the _composition_ of the functions `filter filterEntry` and `head`.
+`book` 인수는 `filter filterEntry` 함수에 전달되고, 이 함수의 결과는 `head` 함수에 전달됩니다. 즉, `book`은 `filter filterEntry`와 `head` 함수의 _합성_ 에 전달됩니다.
 
-In PureScript, the function composition operators are `<<<` and `>>>`. The first is "backwards composition", and the second is "forwards composition".
+PureScript에서 함수 합성 연산자는 `<<<`와 `>>>`입니다. 첫 번째는 "역방향 합성", 두 번째는 "순방향 합성"입니다.
 
-We can rewrite the right-hand side of `findEntry` using either operator. Using backwards-composition, the right-hand side would be
+우리는 `findEntry`의 오른쪽을 이 연산자 중 하나를 사용하여 다시 작성할 수 있습니다. 역방향 합성을 사용하면 오른쪽은 다음과 같습니다:
 
 ```haskell
 (head <<< filter filterEntry) book
 ```
 
-In this form, we can apply the eta conversion trick from earlier, to arrive at the final form of `findEntry`:
+이 형태에서는 앞서 언급한 에타 변환 기법을 적용하여 `findEntry`의 최종 형태에 도달할 수 있습니다:
 
 ```haskell
 {{#include ../exercises/chapter3/src/Data/AddressBook.purs:findEntry_implementation}}
     ...
 ```
 
-An equally valid right-hand side would be:
+동일하게 유효한 오른쪽은 다음과 같습니다:
 
 ```haskell
 filter filterEntry >>> head
 ```
 
-Either way, this gives a clear definition of the `findEntry` function: "`findEntry` is the composition of a filtering function and the `head` function".
+어느 쪽이든, 이는 `findEntry` 함수의 명확한 정의를 제공합니다: "`findEntry`는 필터링 함수와 `head` 함수의 합성입니다".
 
-I will let you decide which definition is easier to understand, but it is often useful to think of functions as building blocks in this way: each function executes a single task, and solutions are assembled using function composition.
+어떤 정의가 이해하기 더 쉬운지는 여러분에게 달려 있지만, 함수들을 이런 방식으로 구성 요소로 생각하는 것이 종종 유용합니다: 각 함수는 단일 작업을 실행하고, 함수 합성을 사용하여 솔루션이 조립됩니다.
 
-## Exercises
+## 연습 문제
 
- 1. (Easy) Test your understanding of the `findEntry` function by writing down the types of each of its major subexpressions. For example, the type of the `head` function as used is specialized to `AddressBook -> Maybe Entry`. _Note_: There is no test for this exercise.
- 1. (Medium) Write a function `findEntryByStreet :: String -> AddressBook -> Maybe Entry` which looks up an `Entry` given a street address. _Hint_ reusing the existing code in `findEntry`. Test your function in PSCi and by running `spago test`.
- 1. (Medium) Rewrite `findEntryByStreet` to replace `filterEntry` with the composition (using `<<<` or `>>>`) of: a property accessor (using the `_.` notation); and a function that tests whether its given string argument is equal to the given street address.
- 1. (Medium) Write a function `isInBook` that tests whether a name appears in a `AddressBook`, returning a Boolean value. _Hint_: Use PSCi to find the type of the `Data.List.null` function, which tests whether a list is empty or not.
- 1. (Difficult) Write a function `removeDuplicates` which removes "duplicate" address book entries. We'll consider entries duplicated if they share the same first and last names, while ignoring `address` fields. _Hint_: Use PSCi to find the type of the `Data.List.nubByEq` function, which removes duplicate elements from a list based on an equality predicate. Note that the first element in each set of duplicates (closest to the list head) is the one that is kept.
+1. (쉬움) `findEntry` 함수의 주요 서브 표현식 각각의 타입을 적어보면서 `findEntry` 함수에 대한 이해를 테스트하세요. 예를 들어, `head` 함수의 사용된 타입은 `AddressBook -> Maybe Entry`로 특수화됩니다. _참고_: 이 연습 문제에는 테스트가 없습니다.
+2. (중간) `findEntry`의 기존 코드를 재사용하여 거리 주소를 주어진 `Entry`를 조회하는 `findEntryByStreet :: String -> AddressBook -> Maybe Entry` 함수를 작성하세요. PSCi에서 함수 테스트를 실행하고 `
 
-## Conclusion
+spago test`를 실행하여 테스트하세요.
+3. (중간) `findEntryByStreet`를 다시 작성하여 `filterEntry`를 `<<<` 또는 `>>>`를 사용하는 구성으로 대체하세요: 속성 접근자 (`_.` 표기법 사용)와 주어진 문자열 인수가 주어진 거리 주소와 같은지 테스트하는 함수의 구성으로 대체하세요.
+4. (중간) `AddressBook`에서 이름이 존재하는지 테스트하고 불리언 값을 반환하는 `isInBook` 함수를 작성하세요. _힌트_: 리스트가 비어 있는지 여부를 테스트하는 `Data.List.null` 함수의 타입을 PSCi에서 찾아보세요.
+5. (어려움) "중복" 주소록 항목을 제거하는 `removeDuplicates` 함수를 작성하세요. 항목이 동일한 이름과 성을 공유하는 경우 주소 필드를 무시하고 중복으로 간주합니다. _힌트_: 리스트의 중복 요소를 제거하는 `Data.List.nubByEq` 함수의 타입을 PSCi에서 찾아보세요. 중복 세트의 첫 번째 요소 (리스트 헤드에 가장 가까운)가 유지됩니다.
 
-In this chapter, we covered several new functional programming concepts and learned how to:
+## 결론
 
-- Use the interactive mode PSCi to experiment with functions and test ideas.
-- Use types as both a correctness tool and an implementation tool.
-- Use curried functions to represent functions of multiple arguments.
-- Create programs from smaller components by composition.
-- Structure code neatly using `where` expressions.
-- Avoid null values by using the `Maybe` type.
-- Use techniques like eta conversion and function composition to refactor code into a clear specification.
+이번 챕터에서는 몇 가지 새로운 함수형 프로그래밍 개념을 다루었고, 다음을 배우는 방법을 익혔습니다:
 
-In the following chapters, we'll build on these ideas.
+- 인터랙티브 모드 PSCi를 사용하여 함수를 실험하고 아이디어를 테스트합니다.
+- 타입을 정확성 도구와 구현 도구로 사용합니다.
+- 커리 함수를 사용하여 여러 인수의 함수를 나타냅니다.
+- 더 작은 구성 요소를 조합하여 프로그램을 작성합니다.
+- `where` 표현식을 사용하여 코드를 깔끔하게 구조화합니다.
+- `Maybe` 타입을 사용하여 null 값을 피합니다.
+- 에타 변환 및 함수 합성과 같은 기술을 사용하여 코드를 명확한 사양으로 리팩토링합니다.
+
+다음 챕터에서는 이 아이디어를 바탕으로 더욱 발전할 것입니다.
