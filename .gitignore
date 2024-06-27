@@ -6,3 +6,4 @@ dist
 /index.html
 /book
 .DS_Store
+.psc-ide-port
