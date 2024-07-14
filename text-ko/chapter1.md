@@ -174,7 +174,7 @@ PSCi 인터랙티브 모드 프롬프트에서 입력해야 하는 명령은 각
 - [PureScript Discourse 포럼](https://discourse.purescript.org/)도 일반적인 문제에 대한 해결책을 검색하기에 좋은 장소입니다.
 - [PureScript: Jordan's Reference](https://github.com/jordanmartinez/purescript-jordans-reference)는 매우 깊이 있게 다루는 대안 학습 리소스입니다. 이 책의 개념을 이해하기 어렵다면 해당 참조의 해당 섹션을 읽어 보세요.
 - [Pursuit](https://pursuit.purescript.org)는 PureScript 타입과 함수를 검색할 수 있는 데이터베이스입니다. Pursuit의 도움말 페이지를 읽고 [어떤 종류의 검색을 할 수 있는지 알아보세요](https://pursuit.purescript.org/help/users).
-- 비공식 [PureScript Cookbook](https://github.com/JordanMartinez/purescript-cookbook)는 "X를 어떻게 하나요?" 유형의 질문에 대해 코드로 답변을 제공합니다.
+- 비공식 [PureScript Cookbook](https://github.com/JordanMartinez/purescript-cookbook)는 "X를 어떻게 하나요?" 타입 질문에 대해 코드로 답변을 제공합니다.
 - [PureScript 문서 저장소](https://github.com/purescript/documentation)는 PureScript 개발자와 사용자가 작성한 다양한 주제에 대한 기사와 예제를 수집합니다.
 - [PureScript 웹사이트](https://www.purescript.org)에는 코드 샘플, 비디오 및 초보자를 위한 기타 리소스를 포함한 여러 학습 리소스에 대한 링크가 포함되어 있습니다.
 - [Try PureScript!](https://try.purescript.org)는 PureScript 코드를 웹 브라우저에서 컴파일할 수 있게 해주며, 간단한 코드 예제가 포함되어 있습니다.
